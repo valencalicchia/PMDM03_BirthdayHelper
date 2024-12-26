@@ -35,10 +35,11 @@ public class Contact implements Serializable {
         this.setTelefonos = setTelefonos;
     }
 
-    public Contact(int id, String tipoNotif, String telefono, String nombre, String imagenId, URI rutaImagen, ArrayList<String> setTelefonos){
+    public Contact(int id, String tipoNotif, String telefono, String nombre, String fechaNacimiento, String imagenId, URI rutaImagen, ArrayList<String> setTelefonos){
         this.id = id;
         this.tipoNotif = tipoNotif;
         this.telefono = telefono;
+        this.fechaNacimiento = fechaNacimiento;
         this.nombre = nombre;
         this.imagenId = imagenId;
         this.rutaImagen = rutaImagen;

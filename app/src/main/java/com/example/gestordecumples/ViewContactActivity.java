@@ -80,21 +80,6 @@ public class ViewContactActivity extends AppCompatActivity {
             etCumple.setText(contacto.getFechaNacimiento()); ///Recuperar fecha y cargarla en data pikcer???
             etCumple.setInputType(InputType.TYPE_NULL);
             etCumple.setFocusable(false);
-            etCumple.setOnClickListener(v -> {
-                TimeHelper.DatePickerHelper newFragment = new TimeHelper.DatePickerHelper();
-                newFragment.setOnDateSetListener(new DatePickerDialog.OnDateSetListener(){
-
-                    @Override
-                    public void onDateSet(DatePicker datePicker, int year, int month, int day) {
-                        // +1 because January is zero
-                        final String selectedDate = day + " / " + (month+1) + " / " + year;
-                        etCumple.setText(selectedDate);
-                    }
-                });
-
-                newFragment.show(getSupportFragmentManager(), "datePicker");
-            });
-
 
             EditText etMens = findViewById(R.id.etMensaje);
             etMens.setText(contacto.getMensaje());

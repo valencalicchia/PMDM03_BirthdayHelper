@@ -50,12 +50,14 @@ public class ContactHelper extends ArrayAdapter<Contact> {
         tvNombre.setText(listContactos.get(position).getNombre());
 
         TextView tvDatos = (TextView) filaContacto.findViewById(R.id.txtDatos);
-        String datos = String.format("%s %s",  Objects.toString(listContactos.get(position).getFechaNacimiento(), "N/A"), Objects.toString(listContactos.get(position).getTelefono(), "N/A"));
+        String datos = String.format("%s%s",  Objects.toString(listContactos.get(position).getFechaNacimiento(), "N/A")+"    ", Objects.toString(listContactos.get(position).getTelefono(), "N/A"));
         tvDatos.setText(datos);
 
         TextView tvNotificacion = (TextView) filaContacto.findViewById(R.id.txtContactoNotificacion);
         String noti = listContactos.get(position).getTipoNotif();
+
         int notiTxtRstring=1;
+
         switch (noti){
             case "0":
                 notiTxtRstring = R.string.solo_noti;

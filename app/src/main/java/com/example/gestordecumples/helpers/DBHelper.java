@@ -1,5 +1,6 @@
 package com.example.gestordecumples.helpers;
 
+import android.annotation.SuppressLint;
 import android.content.ContentResolver;
 import android.content.ContentValues;
 import android.content.Context;
@@ -9,6 +10,10 @@ import android.database.sqlite.SQLiteOpenHelper;
 import android.icu.util.Calendar;
 import android.net.Uri;
 import android.provider.ContactsContract;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
+import java.util.Date;
+
 
 import com.example.gestordecumples.models.Contact;
 
@@ -78,8 +83,6 @@ public class DBHelper extends SQLiteOpenHelper {
                 String mensaje = c.getString(numMensaje);
                 int numTelefono = c.getColumnIndex("Telefono");
                 String telefono = c.getString(numTelefono);
-                int numFechaNacimiento = c.getColumnIndex("FechaNacimiento");
-                String fechaNacimiento = c.getString(numFechaNacimiento);
 
                 if (getOptListContactos().isPresent() && !getOptListContactos().get().isEmpty()){
 
@@ -93,7 +96,6 @@ public class DBHelper extends SQLiteOpenHelper {
                         contacto.setTipoNotif(tipoNotif);
                         contacto.setMensaje(mensaje);
                         contacto.setTelefono(telefono);
-                        contacto.setFechaNacimiento(fechaNacimiento);
                     }
                 }
             }
@@ -115,8 +117,6 @@ public class DBHelper extends SQLiteOpenHelper {
         if (cur.getCount() > 0) {
 
             while (cur.moveToNext()) {
-                //Con este formato recibo un error de que el valor debe ser mayor o igual que 0
-                //String id = cur.getString(cur.getColumnIndex(ContactsContract.Contacts._ID));
                 int numId = cur.getColumnIndex(ContactsContract.Contacts._ID);
                 String id = cur.getString(numId);
                 int numName = cur.getColumnIndex(ContactsContract.Contacts.DISPLAY_NAME);
@@ -126,6 +126,9 @@ public class DBHelper extends SQLiteOpenHelper {
                 int numPhotoId = cur.getColumnIndex(ContactsContract.Contacts.PHOTO_ID);
                 String photoId = cur.getString(numPhotoId);
                 URI rutaImg = null;//android.net.Uri not Serializable - java.net.URI SI serializable
+                String fNach = obtenerCumpleaños(contentResolver,id);
+
+
 
                 if (photoId != null) {
                     try {
@@ -134,23 +137,48 @@ public class DBHelper extends SQLiteOpenHelper {
                         e.printStackTrace();
                     }
                 }
-
-                ArrayList<String> listaTelefonos = new ArrayList<String>();
-
                 if (Integer.parseInt(hasPhoneNumber) > 0) {
-                    listaTelefonos = obtenerNumTelefono(id);
-                    lista.add(new Contact(Integer.parseInt(id),"0", listaTelefonos.get(0), name, photoId, rutaImg, listaTelefonos));
+                    ArrayList<String> listaTelefonos = obtenerNumTelefono(id);
+                    lista.add(new Contact(Integer.parseInt(id),"0", listaTelefonos.get(0), name,fNach, photoId, rutaImg, listaTelefonos));
                 }
-                else{
-
-                    lista.add(new Contact(Integer.parseInt(id),"0", "", name, photoId, rutaImg, listaTelefonos));
-                }
-
             }
-
             optListContactos = Optional.of(lista);
         }
         cur.close();
+    }
+
+    @SuppressLint("Range")
+
+    private String obtenerCumpleaños(ContentResolver contentResolver, String contactId) {
+        String cumpleaños = "Sin fecha";
+        String[] proyeccion = new String[]{
+                ContactsContract.CommonDataKinds.Event.START_DATE
+        };
+        String selection = ContactsContract.Data.CONTACT_ID + " = ? AND " +
+                ContactsContract.Data.MIMETYPE + " = ? AND " +
+                ContactsContract.CommonDataKinds.Event.TYPE + " = ?";
+        String[] selectionArgs = new String[]{
+                contactId,
+                ContactsContract.CommonDataKinds.Event.CONTENT_ITEM_TYPE,
+                String.valueOf(ContactsContract.CommonDataKinds.Event.TYPE_BIRTHDAY)
+        };
+        Cursor cursor = contentResolver.query(ContactsContract.Data.CONTENT_URI, proyeccion, selection, selectionArgs, null);
+
+        if (cursor != null && cursor.moveToFirst()) {
+            String fechaOriginal = cursor.getString(cursor.getColumnIndex(ContactsContract.CommonDataKinds.Event.START_DATE));
+            cursor.close();
+            // Formatear la fecha
+            try {
+                SimpleDateFormat formatoOriginal = new SimpleDateFormat("yyyy-MM-dd"); // Formato original
+                SimpleDateFormat formatoDeseado = new SimpleDateFormat("dd/MM/yyyy");  // Formato deseado
+                Date fecha = formatoOriginal.parse(fechaOriginal);
+                cumpleaños = formatoDeseado.format(fecha);
+            } catch (ParseException e) {
+                e.printStackTrace();
+            }
+        }
+
+        return cumpleaños;
     }
 
 
@@ -175,9 +203,6 @@ public class DBHelper extends SQLiteOpenHelper {
     public void rellenarBD(SQLiteDatabase db) {
 
         if (optListContactos.isPresent() && !optListContactos.get().isEmpty()){
-            //En vez de generar mi propio SQLiteDatabase, aprovecho uno ya creado para evitar llamadas redundantes
-            //SQLiteDatabase db = this.getWritableDatabase();
-
             optListContactos
                     .get()
                     .forEach( o ->{
@@ -188,7 +213,6 @@ public class DBHelper extends SQLiteOpenHelper {
                         values.put("Nombre", o.getNombre());
                         db.insert(TABLE_NAME, null, values);
                     });
-            //db.close();
         }
     }
 

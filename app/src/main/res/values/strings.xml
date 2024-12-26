@@ -1,0 +1,19 @@
+<resources>
+    <string name="app_name">Birthday Helper</string>
+    <string name="contactos">Contactos</string>
+    <string name="config">Configurar Felicitaciones</string>
+    <string name="solo_noti">Aviso: SOLO notificación</string>
+    <string name="sms">Aviso: Enviar SMS</string>
+
+    <string name="seccion_editar">EditarContacto</string>
+    <string name="imagen_contacto_listview">Imagen del Contacto</string>
+    <string name="nombre">Nombre:</string>
+    <string name="puntos">...</string>
+    <string name="Enviar_sms">¿Enviar SMS?</string>
+    <string name="telefono">Teléfono:</string>
+    <string name="fecha_naci">Fecha de Nacimiento:</string>
+    <string name="mens">Mensaje:</string>
+    <string name="guardar">Guardar</string>
+
+    <string name="hora_notif">Hora de notificación</string>
+</resources>

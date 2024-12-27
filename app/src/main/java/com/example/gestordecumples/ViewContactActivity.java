@@ -32,6 +32,7 @@ import java.util.Optional;
 
 public class ViewContactActivity extends AppCompatActivity {
 
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -53,7 +54,7 @@ public class ViewContactActivity extends AppCompatActivity {
     private void mostrarContacto(Optional<Serializable> optContacto){
 
         if (optContacto.isPresent()){
-            Contact contacto = (Contact)optContacto.get();
+            Contact contacto = (Contact) optContacto.get();
             EditText ptNombre = findViewById(R.id.etNombre);
             ptNombre.setText(contacto.getNombre());
             ptNombre.setInputType(InputType.TYPE_NULL);
@@ -70,8 +71,6 @@ public class ViewContactActivity extends AppCompatActivity {
             ImageView autoRetrato = findViewById(R.id.ivFoto);
             if( contacto.getRutaImagen() != null){
                 autoRetrato.setImageURI(Uri.parse(contacto.getRutaImagen().toString()));
-            }else{
-                //autoRetrato.setImageResource(R.drawable.support);
             }
             autoRetrato.setAdjustViewBounds(true);
             autoRetrato.setScaleType(ImageView.ScaleType.CENTER_CROP);
@@ -80,6 +79,7 @@ public class ViewContactActivity extends AppCompatActivity {
             etCumple.setText(contacto.getFechaNacimiento()); ///Recuperar fecha y cargarla en data pikcer???
             etCumple.setInputType(InputType.TYPE_NULL);
             etCumple.setFocusable(false);
+
 
             EditText etMens = findViewById(R.id.etMensaje);
             etMens.setText(contacto.getMensaje());
@@ -137,10 +137,8 @@ public class ViewContactActivity extends AppCompatActivity {
         mapDatos.put("TipoNotif",noti);
 
         Spinner spTelf = findViewById(R.id.spinTelfs);
-        String telf = "";
-        if(spTelf.getSelectedItem() != null){
-            telf = spTelf.getSelectedItem().toString();
-        }
+        String telf;
+        telf = spTelf.getSelectedItem().toString();
         mapDatos.put("Telefono",telf);
 
         EditText etCumple = findViewById(R.id.etFechaNaci);
@@ -156,10 +154,7 @@ public class ViewContactActivity extends AppCompatActivity {
 
         DBHelper bd = new DBHelper(getApplicationContext());
         boolean result = bd.guardarContactoDesdeVerContacto(Optional.of(mapDatos));
-        Toast t =Toast.makeText(this.getApplicationContext(),"OK",Toast.LENGTH_LONG);
-        if (result){
-            t = Toast.makeText(this.getApplicationContext(),"OK",Toast.LENGTH_LONG);
-        }
+        Toast t = Toast.makeText(this.getApplicationContext(),"OK",Toast.LENGTH_LONG);
         t.setGravity(Gravity.CENTER,0,0);
         View v = t.getView();
         v.setBackgroundColor(Color.parseColor("#ababab"));

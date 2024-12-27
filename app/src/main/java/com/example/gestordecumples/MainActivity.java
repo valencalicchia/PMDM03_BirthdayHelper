@@ -131,7 +131,6 @@ public class MainActivity extends AppCompatActivity {
             Contact contacto = dBHelper.getOptListContactos().get().get(position);
             Intent i = new Intent(MainActivity.this.getApplicationContext(),ViewContactActivity.class);
             i.putExtra("contacto",contacto);
-            Toast.makeText(MainActivity.this.getApplicationContext(), "Llegué."+contacto.getNombre(), Toast.LENGTH_LONG).show();
             MainActivity.this.startActivity(i);
         });
     }
@@ -148,6 +147,7 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void confAlarma(int hora, int minut){
+
         Calendar calendario = Calendar.getInstance();
         calendario.setTimeInMillis(System.currentTimeMillis());
         calendario.set(Calendar.HOUR_OF_DAY,hora);

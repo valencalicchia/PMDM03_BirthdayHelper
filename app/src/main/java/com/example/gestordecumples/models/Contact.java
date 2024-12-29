@@ -23,17 +23,17 @@ public class Contact implements Serializable {
 
     public Contact() {}
 
-    public Contact(int id, String tipoNotif, String mensaje, String telefono, String fechaNacimiento, String nombre, String imagenId,URI rutaImagen,ArrayList<String> setTelefonos){
-        this.id = id;
-        this.tipoNotif = tipoNotif;
-        this.mensaje = mensaje;
-        this.telefono = telefono;
-        this.fechaNacimiento = fechaNacimiento;
-        this.nombre = nombre;
-        this.imagenId = imagenId;
-        this.rutaImagen = rutaImagen;
-        this.setTelefonos = setTelefonos;
-    }
+//    public Contact(int id, String tipoNotif, String mensaje, String telefono, String fechaNacimiento, String nombre, String imagenId,URI rutaImagen,ArrayList<String> setTelefonos){
+//        this.id = id;
+//        this.tipoNotif = tipoNotif;
+//        this.mensaje = mensaje;
+//        this.telefono = telefono;
+//        this.fechaNacimiento = fechaNacimiento;
+//        this.nombre = nombre;
+//        this.imagenId = imagenId;
+//        this.rutaImagen = rutaImagen;
+//        this.setTelefonos = setTelefonos;
+//    }
 
     public Contact(int id, String tipoNotif, String telefono, String nombre, String fechaNacimiento, String imagenId, URI rutaImagen, ArrayList<String> setTelefonos){
         this.id = id;

@@ -4,7 +4,13 @@
 
     <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
     <uses-permission android:name="android.permission.READ_CONTACTS" />
-    <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED" />
+    <uses-permission android:name="android.permission.WRITE_CALENDAR" />
+    <uses-permission android:name="android.permission.READ_CALENDAR" />
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
+    <uses-permission android:name="android.permission.WAKE_LOCK" />
+    <uses-permission android:name="com.google.android.c2dm.permission.RECEIVE" />
+    <uses-permission android:name="com.google.android.gms.permission.ACTIVITY_RECOGNITION" />
+    <uses-permission android:name="android.permission.VIBRATE" />
     <application
         android:allowBackup="true"
         android:dataExtractionRules="@xml/data_extraction_rules"
@@ -14,7 +20,8 @@
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
         android:theme="@style/Theme.GestorDeCumples"
-        tools:targetApi="31">
+        tools:targetApi="31"
+        tools:ignore="ForegroundServicePermission">
         <activity
             android:name=".MainActivity"
             android:exported="true">
@@ -26,6 +33,25 @@
         </activity>
 
         <activity android:name=".ViewContactActivity" />
+
+        <receiver
+            android:name="com.example.gestordecumples.helpers.alarm.AlarmReceiver"
+            android:enabled="true" />
+
+        <service
+            android:name=".helpers.alarm.NotificationService"
+            android:permission="android.permission.FOREGROUND_SERVICE" />
+
+
+        <!-- MAKE ALARMS RESTART ON REBOOT -->
+        <service android:name="com.example.gestordecumples.helpers.alarm.RebootServiceClass"/>
+        <receiver android:name="com.example.gestordecumples.helpers.alarm.RebootReceiver"
+            android:exported="true">
+            <intent-filter>
+                <action android:name="android.intent.action.BOOT_COMPLETED"/>
+            </intent-filter>
+        </receiver>
+
     </application>
 
 </manifest>

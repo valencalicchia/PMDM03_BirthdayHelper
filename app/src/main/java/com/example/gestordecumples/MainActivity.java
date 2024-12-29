@@ -3,6 +3,7 @@ package com.example.gestordecumples;
 import android.Manifest;
 import android.app.AlarmManager;
 import android.app.PendingIntent;
+import android.app.TimePickerDialog;
 import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManager;
@@ -12,6 +13,8 @@ import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.widget.ListView;
+import android.widget.TimePicker;
+import android.content.SharedPreferences;
 import android.widget.Toast;
 
 import androidx.annotation.NonNull;
@@ -20,11 +23,10 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
 
+import com.example.gestordecumples.helpers.alarm.AlarmUtils;
 import com.example.gestordecumples.models.Contact;
-import com.example.gestordecumples.helpers.AlarmHelper;
 import com.example.gestordecumples.helpers.ContactHelper;
 import com.example.gestordecumples.helpers.DBHelper;
-import com.example.gestordecumples.helpers.TimeHelper;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -33,12 +35,16 @@ public class MainActivity extends AppCompatActivity {
 
     private static final int REQUEST_CONTACTS_PERMISSION = 1;
     private DBHelper dBHelper;
+    private int alarmID = 1;
+    private SharedPreferences settings;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
 
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+
+        settings = getSharedPreferences(getString(R.string.app_name), Context.MODE_PRIVATE);
 
         ActionBar ab = getSupportActionBar();
         if (ab != null){
@@ -59,7 +65,6 @@ public class MainActivity extends AppCompatActivity {
 
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
-
         int id = item.getItemId();
         if (id == R.id.confFeli) {
             confFelicitaciones();
@@ -77,8 +82,6 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void pedirPermisosParaLeerContactos(){
-        //https://developer.android.com/training/permissions/requesting#java
-
         if (ContextCompat.checkSelfPermission(this, Manifest.permission.READ_CONTACTS)
                 != PackageManager.PERMISSION_GRANTED) {
             ActivityCompat.requestPermissions(this,
@@ -92,11 +95,9 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private boolean comprobarPermisos(String permisoManifiesto){
-
         return (ContextCompat.checkSelfPermission(this, permisoManifiesto) != PackageManager.PERMISSION_GRANTED);
     }
 
-    //Gestiona la contestación a la petición de permisos
     @Override
     public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults);
@@ -137,27 +138,42 @@ public class MainActivity extends AppCompatActivity {
 
     private void confFelicitaciones(){
 
-        TimeHelper.TimePickerHelper timePickerFragment = new TimeHelper.TimePickerHelper();
-        timePickerFragment.setOnTimeSetListener((view, hourOfDay, minute) -> {
-            Log.w("NuevoTime","Hora: " + hourOfDay + " <|> Minutos: " + minute);
-            confAlarma(hourOfDay,minute);
-        });
+        Calendar mcurrentTime = Calendar.getInstance();
+        int hour = mcurrentTime.get(Calendar.HOUR_OF_DAY);
+        int minute = mcurrentTime.get(Calendar.MINUTE);
+        TimePickerDialog mTimePicker;
+        mTimePicker = new TimePickerDialog(MainActivity.this, new TimePickerDialog.OnTimeSetListener() {
+            @Override
+            public void onTimeSet(TimePicker timePicker, int selectedHour, int selectedMinute) {
+                String finalHour, finalMinute;
 
-        timePickerFragment.show(getSupportFragmentManager(), "timePicker");
+                finalHour = "" + selectedHour;
+                finalMinute = "" + selectedMinute;
+                if (selectedHour < 10) finalHour = "0" + selectedHour;
+                if (selectedMinute < 10) finalMinute = "0" + selectedMinute;
+
+                Calendar today = Calendar.getInstance();
+
+                today.set(Calendar.HOUR_OF_DAY, selectedHour);
+                today.set(Calendar.MINUTE, selectedMinute);
+                today.set(Calendar.SECOND, 0);
+
+                SharedPreferences.Editor edit = settings.edit();
+                edit.putString("hour", finalHour);
+                edit.putString("minute", finalMinute);
+
+                //SAVE ALARM TIME TO USE IT IN CASE OF REBOOT
+                edit.putInt("alarmID", alarmID);
+                edit.putLong("alarmTime", today.getTimeInMillis());
+
+                edit.commit();
+
+                Toast.makeText(MainActivity.this, getString(R.string.changed_to, finalHour + ":" + finalMinute), Toast.LENGTH_LONG).show();
+
+                AlarmUtils.setAlarm(alarmID, today.getTimeInMillis(), MainActivity.this);
+            }
+        }, hour, minute, true);//Yes 24 hour time
+        mTimePicker.setTitle(getString(R.string.select_time));
+        mTimePicker.show();
     }
-
-    private void confAlarma(int hora, int minut){
-
-        Calendar calendario = Calendar.getInstance();
-        calendario.setTimeInMillis(System.currentTimeMillis());
-        calendario.set(Calendar.HOUR_OF_DAY,hora);
-        calendario.set(Calendar.MINUTE,minut);
-
-        AlarmManager alarmManager = (AlarmManager)getSystemService(Context.ALARM_SERVICE);
-        Intent intent = new Intent(getApplicationContext(), AlarmHelper.class);
-        PendingIntent pendingIntent = PendingIntent.getBroadcast(getApplicationContext(), 0, intent, 0);
-
-        alarmManager.setInexactRepeating(AlarmManager.RTC_WAKEUP,calendario.getTimeInMillis(),AlarmManager.INTERVAL_DAY,pendingIntent);
-    }
-
 }

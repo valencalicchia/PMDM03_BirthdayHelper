@@ -117,8 +117,6 @@ public class DBHelper extends SQLiteOpenHelper {
         if (cur.getCount() > 0) {
 
             while (cur.moveToNext()) {
-                //Con este formato recibo un error de que el valor debe ser mayor o igual que 0
-                //String id = cur.getString(cur.getColumnIndex(ContactsContract.Contacts._ID));
                 int numId = cur.getColumnIndex(ContactsContract.Contacts._ID);
                 String id = cur.getString(numId);
                 int numName = cur.getColumnIndex(ContactsContract.Contacts.DISPLAY_NAME);
@@ -130,8 +128,6 @@ public class DBHelper extends SQLiteOpenHelper {
                 URI rutaImg = null;//android.net.Uri not Serializable - java.net.URI SI serializable
                 String fNach = obtenerCumpleaños(contentResolver,id);
 
-
-
                 if (photoId != null) {
                     try {
                         rutaImg = new URI(Uri.withAppendedPath(ContactsContract.Data.CONTENT_URI, photoId).toString());
@@ -141,7 +137,6 @@ public class DBHelper extends SQLiteOpenHelper {
                 }
 
                 if (Integer.parseInt(hasPhoneNumber) > 0) {
-                    //listaTelefonos.clear();
                     ArrayList<String>listaTelefonos = obtenerNumTelefono(id); //!! TElefono por defecto ya seleccionado
                     lista.add(new Contact(Integer.parseInt(id),"0", listaTelefonos.get(0), name, fNach, photoId, rutaImg, listaTelefonos));
                 }
@@ -176,9 +171,6 @@ public class DBHelper extends SQLiteOpenHelper {
     public void rellenarBD(SQLiteDatabase db) {
 
         if (optListContactos.isPresent() && !optListContactos.get().isEmpty()){
-            //En vez de generar mi propio SQLiteDatabase, aprovecho uno ya creado para evitar llamadas redundantes
-            //SQLiteDatabase db = this.getWritableDatabase();
-
             optListContactos
                     .get()
                     .forEach( o ->{
@@ -189,7 +181,6 @@ public class DBHelper extends SQLiteOpenHelper {
                         values.put("Nombre", o.getNombre());
                         db.insert(TABLE_NAME, null, values);
                     });
-            //db.close();
         }
     }
 

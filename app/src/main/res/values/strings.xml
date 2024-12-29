@@ -22,4 +22,6 @@
     <string name="change_time">Cambia la hora</string>
     <string name="select_time">Selecciona la hora</string>
     <string name="new_notification">Nueva notificación</string>
+
+    <string name="canal_notificacion">canalalphadelta</string>
 </resources>

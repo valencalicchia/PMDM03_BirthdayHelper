@@ -36,10 +36,7 @@ import java.util.stream.Collectors;
 public class NotificationService extends IntentService {
 
     private NotificationManager notificationManager;
-    private PendingIntent pendingIntent;
-    private static int NOTIFICATION_ID = 1;
-    Notification notification;
-
+    private static final int NOTIFICATION_ID = 1;
 
     public NotificationService(String name) {
         super(name);
@@ -49,78 +46,16 @@ public class NotificationService extends IntentService {
         super("SERVICE");
     }
 
-    @SuppressLint("ForegroundServiceType")
-    @TargetApi(Build.VERSION_CODES.O)
+    @SuppressLint("MissingPermission")
     @Override
     protected void onHandleIntent(Intent intent) {
-        String NOTIFICATION_CHANNEL_ID = getApplicationContext().getString(R.string.app_name);
-        Context context = this.getApplicationContext();
-        notificationManager = (NotificationManager) context.getSystemService(Context.NOTIFICATION_SERVICE);
-        Intent mIntent = new Intent(this, MainActivity.class);
-        Resources res = this.getResources();
-        Uri soundUri = RingtoneManager.getDefaultUri(RingtoneManager.TYPE_ALARM);
+        Context context = getApplicationContext();
 
-        String message = getString(R.string.app_name);
-
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-            final int NOTIFY_ID = 0;
-            String id = NOTIFICATION_CHANNEL_ID;
-            String title = NOTIFICATION_CHANNEL_ID;
-            PendingIntent pendingIntent;
-            NotificationCompat.Builder builder;
-            NotificationManager notifManager = (NotificationManager) context.getSystemService(Context.NOTIFICATION_SERVICE);
-            if (notifManager == null) {
-                notifManager = (NotificationManager) context.getSystemService(Context.NOTIFICATION_SERVICE);
-            }
-            int importance = NotificationManager.IMPORTANCE_HIGH;
-            NotificationChannel mChannel = notifManager.getNotificationChannel(id);
-            if (mChannel == null) {
-                mChannel = new NotificationChannel(id, title, importance);
-                mChannel.enableVibration(true);
-                mChannel.setVibrationPattern(new long[]{100, 200, 300, 400, 500, 400, 300, 200, 400});
-                notifManager.createNotificationChannel(mChannel);
-            }
-            builder = new NotificationCompat.Builder(context, id);
-            mIntent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_SINGLE_TOP);
-            pendingIntent = PendingIntent.getActivity(context, 0, mIntent, PendingIntent.FLAG_IMMUTABLE);
-            builder.setContentTitle(getString(R.string.app_name)).setCategory(Notification.CATEGORY_SERVICE)
-                    .setSmallIcon(R.drawable.ic_launcher_foreground)
-                    .setContentText(message)
-                    .setLargeIcon(BitmapFactory.decodeResource(res, R.drawable.ic_launcher_foreground))
-                    .setDefaults(Notification.DEFAULT_ALL)
-                    .setAutoCancel(true)
-                    .setSound(soundUri)
-                    .setContentIntent(pendingIntent)
-                    .setVibrate(new long[]{100, 200, 300, 400, 500, 400, 300, 200, 400});
-            Notification notification = builder.build();
-            notifManager.notify(NOTIFY_ID, notification);
-
-            // Usa un tipo de servicio válido en lugar de NONE
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
-                startForeground(1, notification, ServiceInfo.FOREGROUND_SERVICE_TYPE_NONE);  // Cambio a un tipo permitido
-            } else {
-                startForeground(1, notification);
-            }
-
-        } else {
-            pendingIntent = PendingIntent.getActivity(context, 1, mIntent, PendingIntent.FLAG_UPDATE_CURRENT);
-            notification = new NotificationCompat.Builder(this)
-                    .setContentIntent(pendingIntent)
-                    .setSmallIcon(R.drawable.ic_launcher_foreground)
-                    .setLargeIcon(BitmapFactory.decodeResource(res, R.drawable.ic_launcher_foreground))
-                    .setSound(soundUri)
-                    .setAutoCancel(true)
-                    .setContentTitle(getString(R.string.app_name)).setCategory(Notification.CATEGORY_SERVICE)
-                    .setContentText(message).build();
-            notificationManager.notify(NOTIFICATION_ID, notification);
-        }
+        // Llamar a la función gestionarAviso antes de crear la notificación
+        gestionarAviso(context);
     }
 
-
-
-
-    private void gestionarAviso(Context context){
-
+    private void gestionarAviso(Context context) {
         DBHelper bd = new DBHelper(context);
         Optional<ArrayList<Contact>> opList = bd.quienCumpleHoy();
         bd.close();
@@ -130,7 +65,7 @@ public class NotificationService extends IntentService {
 
         opList.ifPresent(contactos -> contactos
                 .stream()
-                .peek( con -> setNombres.add(con.getNombre()))
+                .peek(con -> setNombres.add(con.getNombre()))
                 .forEach(c -> {
                     if (c.getTipoNotif().equals("1")) {
                         setContacts.add(c);
@@ -142,49 +77,60 @@ public class NotificationService extends IntentService {
         mandarSms(context, setContacts);
     }
 
-    private void mandarNotificacion(Context context, String contactos){
-
-        String canalId = "CHANNEL_ID_101";
+    private void mandarNotificacion(Context context, String contactos) {
+        String canalId = getString(R.string.app_name);
         CharSequence name = "Canal";
-        int importance = NotificationManager.IMPORTANCE_DEFAULT;
+        int importance = NotificationManager.IMPORTANCE_HIGH;
 
         NotificationChannel channel = new NotificationChannel(canalId, name, importance);
         channel.setDescription("Canal predeterminado para notificaciones");
+        channel.enableVibration(true);
+        channel.setVibrationPattern(new long[]{100, 200, 300, 400, 500, 400, 300, 200, 400});
 
-        Notification notify =  new NotificationCompat.Builder(context, canalId)
+        NotificationManager notificationManager = context.getSystemService(NotificationManager.class);
+        notificationManager.createNotificationChannel(channel);
+
+        Intent mIntent = new Intent(this, MainActivity.class);
+        mIntent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_SINGLE_TOP);
+        PendingIntent pendingIntent = PendingIntent.getActivity(context, 0, mIntent, PendingIntent.FLAG_IMMUTABLE);
+
+        NotificationCompat.Builder builder = new NotificationCompat.Builder(context, canalId)
                 .setSmallIcon(R.drawable.torta)
                 .setContentTitle("Cumpleaños Helper")
                 .setContentText("Despliega para ver todo el texto")
                 .setStyle(new NotificationCompat.BigTextStyle()
-                        .bigText("Feliz cumpleaños a l@s siguientes afortunad@s: "+ contactos))
-                .setPriority(NotificationCompat.PRIORITY_DEFAULT)
+                        .bigText("Feliz cumpleaños a l@s siguientes afortunad@s: " + contactos))
+                .setPriority(NotificationCompat.PRIORITY_HIGH)
                 .setAutoCancel(true)
-                .setLargeIcon(BitmapFactory.decodeResource(context.getResources(),R.drawable.torta))
-                .build();
+                .setSound(RingtoneManager.getDefaultUri(RingtoneManager.TYPE_ALARM))
+                .setContentIntent(pendingIntent)
+                .setLargeIcon(BitmapFactory.decodeResource(context.getResources(), R.drawable.torta))
+                .setVibrate(new long[]{100, 200, 300, 400, 500, 400, 300, 200, 400})
+                .setCategory(NotificationCompat.CATEGORY_SERVICE);
 
-        NotificationManager notificationManager =  context.getSystemService(NotificationManager.class);
-        notificationManager.createNotificationChannel(channel);
-        notificationManager.notify(777, notify);
+        Notification notification = builder.build();
+        notificationManager.notify(NOTIFICATION_ID, notification);
+
+        // Iniciar el servicio en primer plano con la notificación
+        startForeground(NOTIFICATION_ID, notification);
     }
 
-    private void mandarSms(Context context, HashSet<Contact> mapContactos){
-        try{
-            mapContactos
-                    .stream()
-                    .filter( c -> (c.getTelefono() != null)  &&  (!c.getTelefono().isEmpty()) )
-                    .forEach( co ->{
-                        SmsManager smsManager=SmsManager.getDefault();
-                        smsManager.sendTextMessage(co.getTelefono(),null,"Mensaje: " + co.getMensaje(),null,null);
+    private void mandarSms(Context context, HashSet<Contact> mapContactos) {
+        try {
+            mapContactos.stream()
+                    .filter(c -> (c.getTelefono() != null) && (!c.getTelefono().isEmpty()))
+                    .forEach(co -> {
+                        SmsManager smsManager = SmsManager.getDefault();
+                        smsManager.sendTextMessage(co.getTelefono(), null, "Mensaje: " + co.getMensaje(), null, null);
                         System.out.println("Enviado mensaje en método mandarSms");
-                        Toast.makeText(context.getApplicationContext(),"SMS enviado a " + co.getNombre(),Toast.LENGTH_SHORT).show();
+                        Toast.makeText(context.getApplicationContext(), "SMS enviado a " + co.getNombre(), Toast.LENGTH_SHORT).show();
                     });
 
-            Toast t = Toast.makeText(context.getApplicationContext(),"SMS enviados, compruebe en la mensajería de su Telf",Toast.LENGTH_LONG);
-            t.setGravity(Gravity.CENTER,0,0);
+            Toast t = Toast.makeText(context.getApplicationContext(), "SMS enviados, compruebe en la mensajería de su Telf", Toast.LENGTH_LONG);
+            t.setGravity(Gravity.CENTER, 0, 0);
             View v = t.getView();
             v.setBackgroundColor(Color.parseColor("#ababab"));
             t.show();
-
 
         } catch (Exception e) {
             e.printStackTrace();

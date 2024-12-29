@@ -34,6 +34,8 @@ import java.util.Arrays;
 public class MainActivity extends AppCompatActivity {
 
     private static final int REQUEST_CONTACTS_PERMISSION = 1;
+    private static final int REQUEST_NOTIFICATIONS_PERMISSION = 2;
+    private static final int REQUEST_SMS_PERMISSION = 3;
     private DBHelper dBHelper;
     private int alarmID = 1;
     private SharedPreferences settings;
@@ -54,7 +56,48 @@ public class MainActivity extends AppCompatActivity {
             ab.setDisplayUseLogoEnabled(true);
         }
 
-        pedirPermisosParaLeerContactos();
+        checkAndRequestPermissions();
+    }
+
+    private void checkAndRequestPermissions() {
+
+        if (ContextCompat.checkSelfPermission(this, Manifest.permission.POST_NOTIFICATIONS)
+                != PackageManager.PERMISSION_GRANTED) {
+            ActivityCompat.requestPermissions(this,
+                    new String[]{Manifest.permission.POST_NOTIFICATIONS},
+                    REQUEST_NOTIFICATIONS_PERMISSION);
+        }
+
+        if (ContextCompat.checkSelfPermission(this, Manifest.permission.SEND_SMS)
+                != PackageManager.PERMISSION_GRANTED) {
+            ActivityCompat.requestPermissions(this,
+                    new String[]{Manifest.permission.SEND_SMS},
+                    REQUEST_SMS_PERMISSION);
+        }
+
+        if (ContextCompat.checkSelfPermission(this, Manifest.permission.READ_CONTACTS)
+                != PackageManager.PERMISSION_GRANTED) {
+            ActivityCompat.requestPermissions(this,
+                    new String[]{Manifest.permission.READ_CONTACTS},
+                    REQUEST_CONTACTS_PERMISSION);
+        }
+        else{
+            inicializarBD();
+            mostrarListaContactos();
+        }
+    }
+
+    @Override
+    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
+
+        if (grantResults.length > 0){
+
+            if (Arrays.stream(grantResults).allMatch(b-> b == PackageManager.PERMISSION_GRANTED)){
+                inicializarBD();
+                mostrarListaContactos();
+            }
+        }
     }
 
     @Override
@@ -73,6 +116,7 @@ public class MainActivity extends AppCompatActivity {
         return super.onOptionsItemSelected(item);
     }
 
+
     public void onRestart(){
         super.onRestart();
 
@@ -80,37 +124,6 @@ public class MainActivity extends AppCompatActivity {
         listView.invalidate();
         mostrarListaContactos();
     }
-
-    private void pedirPermisosParaLeerContactos(){
-        if (ContextCompat.checkSelfPermission(this, Manifest.permission.READ_CONTACTS)
-                != PackageManager.PERMISSION_GRANTED) {
-            ActivityCompat.requestPermissions(this,
-                    new String[]{Manifest.permission.READ_CONTACTS},
-                    REQUEST_CONTACTS_PERMISSION);
-        } else {
-
-            inicializarBD();
-            mostrarListaContactos();
-        }
-    }
-
-    private boolean comprobarPermisos(String permisoManifiesto){
-        return (ContextCompat.checkSelfPermission(this, permisoManifiesto) != PackageManager.PERMISSION_GRANTED);
-    }
-
-    @Override
-    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
-        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
-
-        if (grantResults.length > 0){
-
-            if (Arrays.stream(grantResults).allMatch(b-> b == PackageManager.PERMISSION_GRANTED)){
-                inicializarBD();
-                mostrarListaContactos();
-            }
-        }
-    }
-
 
     private void inicializarBD(){
 

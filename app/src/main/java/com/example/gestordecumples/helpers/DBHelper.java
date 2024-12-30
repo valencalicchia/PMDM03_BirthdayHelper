@@ -106,7 +106,7 @@ public class DBHelper extends SQLiteOpenHelper {
     }
 
     public void obtenerDatosContactos(ContentResolver contentResolver){
-        //https://developer.android.com/guide/topics/providers/contacts-provider
+
         String[] proyeccion ={ContactsContract.Contacts._ID,
                 ContactsContract.Contacts.DISPLAY_NAME,
                 ContactsContract.Contacts.HAS_PHONE_NUMBER,
@@ -125,8 +125,8 @@ public class DBHelper extends SQLiteOpenHelper {
                 String hasPhoneNumber = cur.getString(numHasPhoneNumber);
                 int numPhotoId = cur.getColumnIndex(ContactsContract.Contacts.PHOTO_ID);
                 String photoId = cur.getString(numPhotoId);
-                URI rutaImg = null;//android.net.Uri not Serializable - java.net.URI SI serializable
-                String fNach = obtenerCumpleaños(contentResolver,id);
+                URI rutaImg = null;
+                String fNach = obtenerCumpleanos(contentResolver,id);
 
                 if (photoId != null) {
                     try {
@@ -184,8 +184,8 @@ public class DBHelper extends SQLiteOpenHelper {
         }
     }
 
-    private String obtenerCumpleaños(ContentResolver contentResolver, String contactId) {
-        String cumpleaños = "";
+    private String obtenerCumpleanos(ContentResolver contentResolver, String contactId) {
+        String cumpleanos = "";
         String[] proyeccion = new String[]{
                 ContactsContract.CommonDataKinds.Event.START_DATE
         };
@@ -202,18 +202,18 @@ public class DBHelper extends SQLiteOpenHelper {
         if (cursor != null && cursor.moveToFirst()) {
             @SuppressLint("Range") String fechaOriginal = cursor.getString(cursor.getColumnIndex(ContactsContract.CommonDataKinds.Event.START_DATE));
             cursor.close();
-            // Formatear la fecha
+
             try {
                 SimpleDateFormat formatoOriginal = new SimpleDateFormat("yyyy-MM-dd"); // Formato original
                 SimpleDateFormat formatoDeseado = new SimpleDateFormat("dd/MM/yyyy");  // Formato deseado
                 Date fecha = formatoOriginal.parse(fechaOriginal);
-                cumpleaños = formatoDeseado.format(fecha);
+                cumpleanos = formatoDeseado.format(fecha);
             } catch (ParseException e) {
                 e.printStackTrace();
             }
         }
 
-        return cumpleaños;
+        return cumpleanos;
     }
 
 
